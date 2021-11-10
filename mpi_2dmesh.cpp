@@ -126,7 +126,11 @@ void computeMeshDecomposition(AppState *as, vector < vector < Tile2D > > *tileAr
    int xtiles, ytiles;
    int ntiles;
 
+   printf(" in computeMeshDecomposition. \n");
+
    if (as->decomp == ROW_DECOMP) {
+
+      printf(" in computeMeshDecomposition. row decomposition\n");
       // in a row decomposition, each tile width is the same as the mesh width
       // the mesh is decomposed along height
       xtiles = 1;
@@ -143,6 +147,7 @@ void computeMeshDecomposition(AppState *as, vector < vector < Tile2D > > *tileAr
       ylocs[ytiles] = as->global_mesh_size[1];
 
       // then, create tiles along the y axis
+      printf(" in computeMeshDecomposition. row decomp - creating tiles\n");
       for (int i = 0; i < ytiles; i++)
       {
          vector < Tile2D > tiles;
@@ -514,7 +519,8 @@ void sobelAllTiles(int myrank, vector < vector < Tile2D > > & tileArray) {
 #endif
             // ADD YOUR CODE HERE
             // to call your sobel filtering code on each tile
-            //do_sobel_filtering(t->inputBuffer.data(), t->outputBuffer.data(), t->height, t->width);
+            printf(" in sobelAllTiles. - calling do_sobel_filtering \n");
+            do_sobel_filtering(t->inputBuffer.data(), t->outputBuffer.data(), t->height, t->width);
          }
       }
    }
@@ -655,6 +661,8 @@ int main(int ac, char *av[]) {
    as.myrank = myrank;
    as.nranks = nranks;
 
+   printf(" in main. about to parse args \n");
+
    if (parseArgs(ac, av, &as) != 0)
    {
       MPI_Finalize();
@@ -672,6 +680,7 @@ int main(int ac, char *av[]) {
       printf("\n\n ----- All ranks will computeMeshDecomposition \n");
 #endif
 
+   printf(" in main. about to call computeMeshDecomposition \n");
    computeMeshDecomposition(&as, &tileArray);
    
    if (as.myrank == 0 && as.debug==1) // print out the AppState and tileArray
@@ -705,6 +714,8 @@ int main(int ac, char *av[]) {
       // start the timer
       start_time = std::chrono::high_resolution_clock::now();
 
+      printf(" in main. about to scatterAllTiles \n");
+
       scatterAllTiles(as.myrank, tileArray, as.input_data_floats.data(), as.global_mesh_size[0], as.global_mesh_size[1]);
 
       // end the timer
@@ -717,6 +728,8 @@ int main(int ac, char *av[]) {
 
       // start the timer
       start_time = std::chrono::high_resolution_clock::now();
+
+      printf(" in main. about to sobelAllTiles \n");
 
       sobelAllTiles(as.myrank, tileArray);
 
@@ -740,6 +753,8 @@ int main(int ac, char *av[]) {
       // start the timer
       start_time = std::chrono::high_resolution_clock::now();
 
+      printf(" in main. about to gatherAllTiles \n");
+
       gatherAllTiles(as.myrank, tileArray, as.output_data_floats.data(), as.global_mesh_size[0], as.global_mesh_size[1]);
 
       // end the timer
@@ -756,6 +771,8 @@ int main(int ac, char *av[]) {
    }
 
    MPI_Barrier(MPI_COMM_WORLD);
+
+   printf(" in main. about will print runtimes - done \n");
 
    if (as.myrank == 0) {
       printf("\n\nTiming results from rank 0: \n");
