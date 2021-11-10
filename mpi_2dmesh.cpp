@@ -506,11 +506,11 @@ void sobelAllTiles(int myrank, vector < vector < Tile2D > > & tileArray) {
             //std::fill(t->outputBuffer.begin(), t->outputBuffer.end(), myrank);
 
             // v2. copy the input to the output, umodified
-         //   std::copy(t->inputBuffer.begin(), t->inputBuffer.end(), t->outputBuffer.begin());
+            //   std::copy(t->inputBuffer.begin(), t->inputBuffer.end(), t->outputBuffer.begin());
 #endif
-         // ADD YOUR CODE HERE
-         // to call your sobel filtering code on each tile
-         do_sobel_filtering(t->inputBuffer.data(), t->outputBuffer.data(), t->height, t->width)
+            // ADD YOUR CODE HERE
+            // to call your sobel filtering code on each tile
+            do_sobel_filtering(t->inputBuffer.data(), t->outputBuffer.data(), t->height, t->width);
          }
       }
    }
@@ -629,7 +629,6 @@ void gatherAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float 
                }
             }
          }
-
       }
    } // loop over 2D array of tiles
 }
