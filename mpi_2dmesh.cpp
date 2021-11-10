@@ -391,6 +391,7 @@ void sendStridedBuffer(float *srcBuf,
    }
    else
    {
+      printf(" Rank %d in sendStridedBuffer. accumulating tile data \n", fromRank);
       // accumulate the data before sending
       for (int i = 0; i < sendHeight; i++, start_index += srcWidth)
       {
@@ -400,6 +401,7 @@ void sendStridedBuffer(float *srcBuf,
          }
       }
 
+      printf(" Rank %d in sendStridedBuffer. sending tile data \n", fromRank);
       // send the tile data
       MPI_Send(tile_data, sendWidth*sendHeight, MPI_FLOAT, toRank, fromRank, MPI_COMM_WORLD);
    }
@@ -432,9 +434,11 @@ void recvStridedBuffer(float *dstBuf,
    {
       int start_index = dstOffsetRow*dstWidth+dstOffsetColumn;
       float dst_data[expectedHeight*expectedWidth];
+      printf(" Rank %d in recvStridedBuffer. receiving tile data \n", toRank);
       MPI_Recv(dst_data, expectedHeight*expectedWidth, MPI_FLOAT, fromRank, toRank, MPI_COMM_WORLD, &stat);
 
       // put the data into the destination appropriately
+      printf(" Rank %d in recvStridedBuffer. copying to destination from tile data \n", toRank);
       for (int row = 0; row < expectedHeight; row++, start_index += dstWidth)
       {
          for (int j = 0, k = 0; j < expectedWidth; j++, k++)
@@ -510,7 +514,7 @@ void sobelAllTiles(int myrank, vector < vector < Tile2D > > & tileArray) {
 #endif
             // ADD YOUR CODE HERE
             // to call your sobel filtering code on each tile
-            do_sobel_filtering(t->inputBuffer.data(), t->outputBuffer.data(), t->height, t->width);
+            //do_sobel_filtering(t->inputBuffer.data(), t->outputBuffer.data(), t->height, t->width);
          }
       }
    }
@@ -564,6 +568,7 @@ void scatterAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float
 
                off_t s_offset=0, d_offset=0;
                float *d = t->inputBuffer.data();
+               printf(" Rank %d in scatterAllTiles. about to do memcpy \n", t->tileRank);
                //s_offset = t->yloc*global_width+t->xloc;  // Peter ijeoma - starting index
 
                for (int j = 0; j < t->height; j++, s_offset+=global_width, d_offset+=t->width)
