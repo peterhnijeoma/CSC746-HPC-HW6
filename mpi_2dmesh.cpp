@@ -1,5 +1,5 @@
 //
-// (C) 2021, E. Wes Bethel
+// (C) 2021, E. Wes Bethel and Peter Ijeoma
 // mpi_2dmesh.cpp
 
 // usage:
@@ -42,8 +42,7 @@
 
 #define DEBUG_TRACE 0 
 
-int
-parseArgs(int ac, char *av[], AppState *as)
+int parseArgs(int ac, char *av[], AppState *as)
 {
    int rstat = 0;
    int c;
@@ -122,8 +121,8 @@ parseArgs(int ac, char *av[], AppState *as)
 // assumptions:
 // - For tile decompositions, will use sqrt(nranks) tiles per axis
 //
-void
-computeMeshDecomposition(AppState *as, vector < vector < Tile2D > > *tileArray) {
+void computeMeshDecomposition(AppState *as, vector < vector < Tile2D > > *tileArray)
+{
    int xtiles, ytiles;
    int ntiles;
 
@@ -137,14 +136,14 @@ computeMeshDecomposition(AppState *as, vector < vector < Tile2D > > *tileArray) 
       int ylocs[ytiles+1];
       int ysize = as->global_mesh_size[1] / as->nranks; // size of each tile in y
 
-      int yval=0;
-      for (int i=0; i<ytiles; i++, yval+=ysize) {
+      int yval = 0;
+      for (int i = 0; i < ytiles; i++, yval += ysize) {
          ylocs[i] = yval;
       }
       ylocs[ytiles] = as->global_mesh_size[1];
 
       // then, create tiles along the y axis
-      for (int i=0; i<ytiles; i++)
+      for (int i = 0; i < ytiles; i++)
       {
          vector < Tile2D > tiles;
          int width =  as->global_mesh_size[0];
@@ -228,9 +227,7 @@ computeMeshDecomposition(AppState *as, vector < vector < Tile2D > > *tileArray) 
    }
 }
 
-void
-write_output_labels(AppState as,
-		    vector < vector < Tile2D > >tileArray)
+void write_output_labels(AppState as, vector < vector < Tile2D > >tileArray)
 {
    // create a buffer of ints, we will set buf[i,j] to be a value
    // in the range 0..nranks-1 to reflect which rank is owner of
@@ -246,11 +243,11 @@ write_output_labels(AppState as,
    for (off_t i = 0; i < xsize*ysize; i++)
       meshRankLabels[i] = -1;
 
-   for (int row=0; row < tileArray.size(); row++)
+   for (int row = 0; row < tileArray.size(); row++)
    {
       printf(" Row %d of the tileArray is of length %d \n", row, tileArray[row].size());
 
-      for (int col=0;col < tileArray[row].size(); col++)
+      for (int col = 0; col < tileArray[row].size(); col++)
       {  
          Tile2D t = tileArray[row][col];
 
@@ -281,15 +278,14 @@ write_output_labels(AppState as,
    fclose(f);
 } // end writing an output buffer
 
-void
-printTileArray(vector < vector < Tile2D > > & tileArray)
+void printTileArray(vector < vector < Tile2D > > & tileArray)
 {
    printf("---- Contents of the tileArray, which is of length %d \n", tileArray.size());
 
-   for (int row=0;row<tileArray.size(); row++)
+   for (int row = 0; row < tileArray.size(); row++)
    {
       printf(" Row %d of the tileArray is of length %d \n", row, tileArray[row].size());
-      for (int col=0; col<tileArray[row].size(); col++)
+      for (int col = 0; col < tileArray[row].size(); col++)
       {  
          Tile2D t = tileArray[row][col];
          t.print(row, col);
@@ -303,8 +299,7 @@ float byteNormalize(unsigned char i)
    return ((float)i * ONE_OVER_255);
 }
 
-void
-loadInputFile(AppState *as)
+void loadInputFile(AppState *as)
 {
    // open the input file
    FILE *f = fopen(as->input_filename, "r");
@@ -335,10 +330,9 @@ unsigned char floatNormalize(float t)
    return ((unsigned char)(t*255.0));
 }
 
-void
-writeOutputFile(AppState &as)
+void writeOutputFile(AppState &as)
 {
-   // open the input file
+   // open the output file
    FILE *f = fopen(as.output_filename, "w");
    if (f == NULL)
    {
@@ -369,8 +363,7 @@ writeOutputFile(AppState &as)
 }
 
 
-void
-sendStridedBuffer(float *srcBuf, 
+void sendStridedBuffer(float *srcBuf, 
       int srcWidth, int srcHeight, 
       int srcOffsetColumn, int srcOffsetRow, 
       int sendWidth, int sendHeight, 
@@ -387,10 +380,32 @@ sendStridedBuffer(float *srcBuf,
    // srcBuf by the values specificed by srcOffsetColumn, srcOffsetRow.
    //
 
+   int start_index = srcOffsetRow*srcWidth+srcOffsetColumn;
+   float tile_data[sendWidth*sendHeight];
+   int k = 0;
+
+   if ((srcWidth == sendWidth) && (srcHeight == sendHeight) &&
+       (srcOffsetRow == 0) && (srcOffsetColumn == 0))  // send the full bufer
+   {
+      MPI_Send(srcBuf, sendWidth*sendHeight, MPI_FLOAT, toRank, fromRank, MPI_COMM_WORLD);
+   }
+   else
+   {
+      // accumulate the data before sending
+      for (int i = 0; i < sendHeight; i++, start_index += srcWidth)
+      {
+         for (int j = 0; i < sendWidth; j++, k++)
+         {
+            tile_data[k] = srcBuf[start_index+j];
+         }
+      }
+
+      // send the tile data
+      MPI_Send(tile_data, sendWidth*sendHeight, MPI_FLOAT, toRank, fromRank, MPI_COMM_WORLD);
+   }
 }
 
-void
-recvStridedBuffer(float *dstBuf, 
+void recvStridedBuffer(float *dstBuf, 
       int dstWidth, int dstHeight, 
       int dstOffsetColumn, int dstOffsetRow, 
       int expectedWidth, int expectedHeight, 
@@ -408,6 +423,26 @@ recvStridedBuffer(float *dstBuf,
    // at dstOffsetColumn, dstOffsetRow, and that is expectedWidth, expectedHeight in size.
    //
 
+   if ((dstWidth == expectedWidth) && (dstHeight == expectedHeight) &&
+       (dstOffsetColumn == 0) && (dstOffsetRow == 0))  // receive the entire buffer
+   {
+      MPI_Recv(dstBuf, expectedHeight*expectedWidth, MPI_FLOAT, fromRank, toRank, MPI_COMM_WORLD, &stat);
+   }
+   else
+   {
+      int start_index = dstOffsetRow*dstWidth+dstOffsetColumn;
+      float dst_data[expectedHeight*expectedWidth];
+      MPI_Recv(dst_data, expectedHeight*expectedWidth, MPI_FLOAT, fromRank, toRank, MPI_COMM_WORLD, &stat);
+
+      // put the data into the destination appropriately
+      for (int row = 0; row < expectedHeight; row++, start_index += dstWidth)
+      {
+         for (int j = 0, k = 0; j < expectedWidth; j++, k++)
+         {
+            dstBuf[start_index+j] = dst_data[k];
+         }
+      }
+   }
 }
 
 
@@ -417,12 +452,48 @@ recvStridedBuffer(float *dstBuf,
 // suggest using your cpu code from HW5, no OpenMP parallelism 
 //
 
+// sobel_filtered_pixel(): perform the sobel filtering at a given i,j location
+float sobel_filtered_pixel(float *s, int i, int j , int rows, int cols, float *gx, float *gy)
+{
+   float t = 0.0;
 
-void
-sobelAllTiles(int myrank, vector < vector < Tile2D > > & tileArray) {
-   for (int row=0;row<tileArray.size(); row++)
+   int s_index = i * cols + j; // s index at [i,j] the center
+   float Gx, Gy;
+
+   Gx = gx[0]*s[s_index-cols-1] + gx[1]*s[s_index-cols] + gx[2]*s[s_index-(cols+1)] + gx[3]*s[s_index-1] + gx[4]*s[s_index] + gx[5]*s[s_index+1] + gx[6]*s[s_index+cols-1] + gx[7]*s[s_index+cols] + gx[8]*s[s_index+cols+1];
+   Gy = gy[0]*s[s_index-cols-1] + gy[1]*s[s_index-cols] + gy[2]*s[s_index-(cols+1)] + gy[3]*s[s_index-1] + gy[4]*s[s_index] + gy[5]*s[s_index+1] + gy[6]*s[s_index+cols-1] + gy[7]*s[s_index+cols] + gy[8]*s[s_index+cols+1];
+   
+   t = sqrt(Gx*Gx + Gy*Gy);
+   return t;
+}
+
+//  do_sobel_filtering() will iterate over all input image pixels and invoke the
+//  sobel_filtered_pixel() function at each (i,j) location of input to compute the
+//  sobel filtered output pixel at location (i,j) in output.
+void do_sobel_filtering(float *in, float *out, int rows, int cols)
+{
+   float Gx[] = {1.0, 0.0, -1.0, 2.0, 0.0, -2.0, 1.0, 0.0, -1.0};
+   float Gy[] = {1.0, 2.0, 1.0, 0.0, 0.0, 0.0, -1.0, -2.0, -1.0};
+
+   // initialize the out array to 0.0 since we will skip the edges of the source image
+   for (int i = 0; i < cols*rows; i++)
    {
-      for (int col=0; col<tileArray[row].size(); col++)
+      out[i] = 0.0;
+   }
+
+   for (int i = 1; i < rows-1; i++)     // skip the edges by starting at row index 1
+   {
+      for (int j = 1; j < cols-1; j++)  // skip the edges by starting at column index 1
+      {
+         out[i*cols+j] = sobel_filtered_pixel(in, i, j, rows, cols, Gx, Gy);
+      }
+   }
+}
+
+void sobelAllTiles(int myrank, vector < vector < Tile2D > > & tileArray) {
+   for (int row = 0; row < tileArray.size(); row++)
+   {
+      for (int col = 0; col < tileArray[row].size(); col++)
       {  
          Tile2D *t = &(tileArray[row][col]);
 
@@ -439,27 +510,27 @@ sobelAllTiles(int myrank, vector < vector < Tile2D > > & tileArray) {
 #endif
          // ADD YOUR CODE HERE
          // to call your sobel filtering code on each tile
+         do_sobel_filtering(t->inputBuffer, t->outputBuffer, t->height, t->width)
          }
       }
    }
 }
 
-void
-scatterAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float *s, int global_width, int global_height)
+void scatterAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float *s, int global_width, int global_height)
 {
 
 #if DEBUG_TRACE
    printf(" Rank %d is entering scatterAllTiles \n", myrank);
 #endif
-   for (int row=0;row<tileArray.size(); row++)
+   for (int row = 0; row < tileArray.size(); row++)
    {
-      for (int col=0; col<tileArray[row].size(); col++)
-      {  
+      for (int col = 0; col < tileArray[row].size(); col++)
+      {   
          Tile2D *t = &(tileArray[row][col]);
 
          if (myrank != 0 && t->tileRank == myrank)
          {
-            int fromRank=0;
+            int fromRank = 0;
 
             // receive a tile's buffer 
             t->inputBuffer.resize(t->width*t->height);
@@ -493,8 +564,9 @@ scatterAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float *s, 
 
                off_t s_offset=0, d_offset=0;
                float *d = t->inputBuffer.data();
+               //s_offset = t->yloc*global_width+t->xloc;  // Peter ijeoma - starting index
 
-               for (int j=0;j<t->height;j++, s_offset+=global_width, d_offset+=t->width)
+               for (int j = 0; j < t->height; j++, s_offset+=global_width, d_offset+=t->width)
                {
                   memcpy((void *)(d+d_offset), (void *)(s+s_offset), sizeof(float)*t->width);
                }
@@ -514,13 +586,12 @@ scatterAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float *s, 
       
 }
 
-void
-gatherAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float *d, int global_width, int global_height)
+void gatherAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float *d, int global_width, int global_height)
 {
 
-   for (int row=0;row<tileArray.size(); row++)
+   for (int row = 0; row < tileArray.size(); row++)
    {
-      for (int col=0; col<tileArray[row].size(); col++)
+      for (int col = 0; col < tileArray[row].size(); col++)
       {  
          Tile2D *t = &(tileArray[row][col]);
 
@@ -549,10 +620,10 @@ gatherAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float *d, i
             else // copy from a tile owned by rank 0 back into the main buffer
             {
                float *s = t->outputBuffer.data();
-               off_t s_offset=0, d_offset=0;
+               off_t s_offset = 0, d_offset = 0;
                d_offset = t->yloc * global_width + t->xloc;
 
-               for (int j=0;j<t->height;j++, s_offset+=t->width, d_offset+=global_width)
+               for (int j = 0; j < t->height; j++, s_offset += t->width, d_offset += global_width)
                {
                   memcpy((void *)(d+d_offset), (void *)(s+s_offset), sizeof(float)*t->width);
                }
