@@ -385,10 +385,13 @@ void sendStridedBuffer(float *srcBuf,
    // srcBuf by the values specificed by srcOffsetColumn, srcOffsetRow.
    //
 
+   printf(" in sendStridedBuffer. from rank %d to rank %d srcwidth %d srcheight %d rowoffset %d coloffset %d sendwidth %d send height %d \n", fromRank, toRank, srcWidth, srcHeight, srcOffsetRow, srcOffsetColumn, sendWidth, sendHeight);
+
    if ((srcWidth == sendWidth) && (srcHeight == sendHeight) &&
        (srcOffsetRow == 0) && (srcOffsetColumn == 0))  // send the full bufer
    {
-      MPI_Send(srcBuf, sendWidth*sendHeight, MPI_FLOAT, toRank, fromRank, MPI_COMM_WORLD);
+      printf(" Rank  %d in sendStridedBuffer. will send full srcbuf \n", fromRank);
+      //MPI_Send(srcBuf, sendWidth*sendHeight, MPI_FLOAT, toRank, fromRank, MPI_COMM_WORLD);
    }
    else
    {
@@ -408,7 +411,7 @@ void sendStridedBuffer(float *srcBuf,
 
       printf(" Rank %d in sendStridedBuffer. sending tile data \n", fromRank);
       // send the tile data
-      MPI_Send(tile_data, sendWidth*sendHeight, MPI_FLOAT, toRank, fromRank, MPI_COMM_WORLD);
+      //MPI_Send(tile_data, sendWidth*sendHeight, MPI_FLOAT, toRank, fromRank, MPI_COMM_WORLD);
    }
 }
 
@@ -430,27 +433,30 @@ void recvStridedBuffer(float *dstBuf,
    // at dstOffsetColumn, dstOffsetRow, and that is expectedWidth, expectedHeight in size.
    //
 
+   printf(" in recvStridedBuffer. from rank %d to rank %d dstwidth %d dstheight %d rowoffset %d coloffset %d expectedwidth %d expectedheight %d \n", fromRank, toRank, dstWidth, dstHeight, dstOffsetRow, dstOffsetColumn, expectedWidth, expectedHeight);
+
    if ((dstWidth == expectedWidth) && (dstHeight == expectedHeight) &&
        (dstOffsetColumn == 0) && (dstOffsetRow == 0))  // receive the entire buffer
    {
-      MPI_Recv(dstBuf, expectedHeight*expectedWidth, MPI_FLOAT, fromRank, toRank, MPI_COMM_WORLD, &stat);
+      printf(" Rank %d in recvStridedBuffer. receiving full buffer \n", toRank);
+      //MPI_Recv(dstBuf, expectedHeight*expectedWidth, MPI_FLOAT, fromRank, toRank, MPI_COMM_WORLD, &stat);
    }
    else
    {
       int start_index = dstOffsetRow*dstWidth+dstOffsetColumn;
       float dst_data[expectedHeight*expectedWidth];
       printf(" Rank %d in recvStridedBuffer. receiving tile data \n", toRank);
-      MPI_Recv(dst_data, expectedHeight*expectedWidth, MPI_FLOAT, fromRank, toRank, MPI_COMM_WORLD, &stat);
+      //MPI_Recv(dst_data, expectedHeight*expectedWidth, MPI_FLOAT, fromRank, toRank, MPI_COMM_WORLD, &stat);
 
       // put the data into the destination appropriately
       printf(" Rank %d in recvStridedBuffer. copying to destination from tile data \n", toRank);
-      for (int row = 0; row < expectedHeight; row++, start_index += dstWidth)
-      {
-         for (int j = 0, k = 0; j < expectedWidth; j++, k++)
-         {
-            dstBuf[start_index+j] = dst_data[k];
-         }
-      }
+      // for (int row = 0; row < expectedHeight; row++, start_index += dstWidth)
+      // {
+      //    for (int j = 0, k = 0; j < expectedWidth; j++, k++)
+      //    {
+      //       dstBuf[start_index+j] = dst_data[k];
+      //    }
+      // }
    }
 }
 
