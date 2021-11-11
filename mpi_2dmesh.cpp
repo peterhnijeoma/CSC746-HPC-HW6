@@ -399,15 +399,15 @@ void sendStridedBuffer(float *srcBuf,
       float tile_data[sendWidth*sendHeight];
       int k = 0;
       printf(" Rank %d in sendStridedBuffer. accumulating tile data \n", fromRank);
-      // accumulate the data before sending
-      //k = 0;
-      // for (int i = 0; i < sendHeight; i++, start_index += srcWidth)
-      // {
-      //    for (int j = 0; j < sendWidth; j++, k++)
-      //    {
-      //       tile_data[k] = srcBuf[start_index+j];
-      //    }
-      // }
+      accumulate the data before sending
+      k = 0;
+      for (int i = 0; i < sendHeight; i++, start_index += srcWidth)
+      {
+         for (int j = 0; j < sendWidth; j++, k++)
+         {
+            tile_data[k] = srcBuf[start_index+j];
+         }
+      }
 
       printf(" Rank %d in sendStridedBuffer. sending tile data \n", fromRank);
       // send the tile data
