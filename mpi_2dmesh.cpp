@@ -561,11 +561,11 @@ void scatterAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float
                printf("scatterAllTiles() send side: t->tileRank=%d, myrank=%d, t->inputBuffer->size()=%d \n", t->tileRank, myrank, t->inputBuffer.size());
 #endif
 
-               sendStridedBuffer(s, // ptr to the buffer to send
-                     global_width, global_height,  // size of the src buffer
-                     t->xloc, t->yloc, // offset into the send buffer
-                     t->width, t->height,  // size of the buffer to send,
-                     myrank, t->tileRank);
+               // sendStridedBuffer(s, // ptr to the buffer to send
+               //       global_width, global_height,  // size of the src buffer
+               //       t->xloc, t->yloc, // offset into the send buffer
+               //       t->width, t->height,  // size of the buffer to send,
+               //       myrank, t->tileRank);
             }
             else // rather then have rank 0 send to rank 0, just do a strided copy into a tile's input buffer
             {
