@@ -450,13 +450,13 @@ void recvStridedBuffer(float *dstBuf,
 
       // put the data into the destination appropriately
       printf(" Rank %d in recvStridedBuffer. copying to destination from tile data \n", toRank);
-      // for (int row = 0; row < expectedHeight; row++, start_index += dstWidth)
-      // {
-      //    for (int j = 0, k = 0; j < expectedWidth; j++, k++)
-      //    {
-      //       dstBuf[start_index+j] = dst_data[k];
-      //    }
-      // }
+      for (int row = 0; row < expectedHeight; row++, start_index += dstWidth)
+      {
+         for (int j = 0, k = 0; j < expectedWidth; j++, k++)
+         {
+            dstBuf[start_index+j] = dst_data[k];
+         }
+      }
    }
 }
 
