@@ -528,6 +528,7 @@ void sobelAllTiles(int myrank, vector < vector < Tile2D > > & tileArray) {
 
 void scatterAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float *s, int global_width, int global_height)
 {
+   printf(" Rank %d in scatterAllTiles.\n", t->tileRank);
 
 #if DEBUG_TRACE
    printf(" Rank %d is entering scatterAllTiles \n", myrank);
