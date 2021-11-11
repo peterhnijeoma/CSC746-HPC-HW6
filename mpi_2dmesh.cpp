@@ -681,7 +681,7 @@ int main(int ac, char *av[]) {
 #endif
 
    printf(" in main. about to call computeMeshDecomposition \n");
-   computeMeshDecomposition(&as, &tileArray);
+   //computeMeshDecomposition(&as, &tileArray);
    
    if (as.myrank == 0 && as.debug==1) // print out the AppState and tileArray
    {
@@ -716,7 +716,7 @@ int main(int ac, char *av[]) {
 
       printf(" in main. about to scatterAllTiles \n");
 
-      scatterAllTiles(as.myrank, tileArray, as.input_data_floats.data(), as.global_mesh_size[0], as.global_mesh_size[1]);
+      //scatterAllTiles(as.myrank, tileArray, as.input_data_floats.data(), as.global_mesh_size[0], as.global_mesh_size[1]);
 
       // end the timer
       MPI_Barrier(MPI_COMM_WORLD);
@@ -731,7 +731,7 @@ int main(int ac, char *av[]) {
 
       printf(" in main. about to sobelAllTiles \n");
 
-      sobelAllTiles(as.myrank, tileArray);
+      //sobelAllTiles(as.myrank, tileArray);
 
       // end the timer
       MPI_Barrier(MPI_COMM_WORLD);
@@ -755,7 +755,7 @@ int main(int ac, char *av[]) {
 
       printf(" in main. about to gatherAllTiles \n");
 
-      gatherAllTiles(as.myrank, tileArray, as.output_data_floats.data(), as.global_mesh_size[0], as.global_mesh_size[1]);
+      //gatherAllTiles(as.myrank, tileArray, as.output_data_floats.data(), as.global_mesh_size[0], as.global_mesh_size[1]);
 
       // end the timer
       MPI_Barrier(MPI_COMM_WORLD);
