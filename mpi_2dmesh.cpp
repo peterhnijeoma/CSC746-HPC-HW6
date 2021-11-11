@@ -762,7 +762,7 @@ int main(int ac, char *av[]) {
 
       printf(" in main. about to gatherAllTiles \n");
 
-      //gatherAllTiles(as.myrank, tileArray, as.output_data_floats.data(), as.global_mesh_size[0], as.global_mesh_size[1]);
+      gatherAllTiles(as.myrank, tileArray, as.output_data_floats.data(), as.global_mesh_size[0], as.global_mesh_size[1]);
 
       // end the timer
       MPI_Barrier(MPI_COMM_WORLD);
