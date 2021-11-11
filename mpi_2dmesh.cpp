@@ -385,10 +385,6 @@ void sendStridedBuffer(float *srcBuf,
    // srcBuf by the values specificed by srcOffsetColumn, srcOffsetRow.
    //
 
-   int start_index = srcOffsetRow*srcWidth+srcOffsetColumn;
-   float tile_data[sendWidth*sendHeight];
-   int k = 0;
-
    if ((srcWidth == sendWidth) && (srcHeight == sendHeight) &&
        (srcOffsetRow == 0) && (srcOffsetColumn == 0))  // send the full bufer
    {
@@ -396,15 +392,17 @@ void sendStridedBuffer(float *srcBuf,
    }
    else
    {
+      int start_index = srcOffsetRow*srcWidth+srcOffsetColumn;
+      float tile_data[sendWidth*sendHeight];
+      int k = 0;
       printf(" Rank %d in sendStridedBuffer. accumulating tile data \n", fromRank);
       // accumulate the data before sending
       //k = 0;
       for (int i = 0; i < sendHeight; i++, start_index += srcWidth)
       {
-         for (int j = 0; i < sendWidth; j++, k++)
+         for (int j = 0; j < sendWidth; j++, k++)
          {
-            tile_data[k] = 1.0;
-            //srcBuf[start_index+j];
+            tile_data[k] = srcBuf[start_index+j];
          }
       }
 
