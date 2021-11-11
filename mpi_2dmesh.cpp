@@ -548,7 +548,7 @@ void scatterAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float
 #if DEBUG_TRACE
             printf("scatterAllTiles() receive side:: t->tileRank=%d, myrank=%d, t->inputBuffer->size()=%d, t->outputBuffersize()=%d \n", t->tileRank, myrank, t->inputBuffer.size(), t->outputBuffer.size());
 #endif
-
+            printf(" Rank %d in scatterAllTiles. about to do receive tile data \n", t->tileRank);
             recvStridedBuffer(t->inputBuffer.data(), t->width, t->height,
                   0, 0,  // offset into the tile buffer: we want the whole thing
                   t->width, t->height, // how much data coming from this tile
@@ -560,7 +560,7 @@ void scatterAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float
 #if DEBUG_TRACE
                printf("scatterAllTiles() send side: t->tileRank=%d, myrank=%d, t->inputBuffer->size()=%d \n", t->tileRank, myrank, t->inputBuffer.size());
 #endif
-
+               printf(" Rank %d in scatterAllTiles. about to do send tile data to rank %d \n", myrank, t->tileRank);
                sendStridedBuffer(s, // ptr to the buffer to send
                      global_width, global_height,  // size of the src buffer
                      t->xloc, t->yloc, // offset into the send buffer
@@ -716,7 +716,7 @@ int main(int ac, char *av[]) {
 
       printf(" in main. about to scatterAllTiles \n");
 
-      //scatterAllTiles(as.myrank, tileArray, as.input_data_floats.data(), as.global_mesh_size[0], as.global_mesh_size[1]);
+      scatterAllTiles(as.myrank, tileArray, as.input_data_floats.data(), as.global_mesh_size[0], as.global_mesh_size[1]);
 
       // end the timer
       MPI_Barrier(MPI_COMM_WORLD);
