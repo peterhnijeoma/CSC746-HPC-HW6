@@ -444,14 +444,14 @@ void recvStridedBuffer(float *dstBuf,
    int start_index = dstOffsetRow*dstWidth+dstOffsetColumn;
    float dst_data[data_size];
 
-   MPI_Datatype recv_subarray;
-   int tile_data_size[] = {data_size};
-   int sub_array_size[] = {1000};
-   int subarray_start_ind[] = {1};
-   int numb_dims = 1;
+   // MPI_Datatype recv_subarray;
+   // int tile_data_size[] = {data_size};
+   // int sub_array_size[] = {1000};
+   // int subarray_start_ind[] = {1};
+   // int numb_dims = 1;
 
-   MPI_Type_create_subarray(numb_dims, tile_data_size, sub_array_size, subarray_start_ind, MPI_ORDER_C, MPI_FLOAT, &recv_subarray);
-   MPI_Type_commit(&recv_subarray);
+   // MPI_Type_create_subarray(numb_dims, tile_data_size, sub_array_size, subarray_start_ind, MPI_ORDER_C, MPI_FLOAT, &recv_subarray);
+   // MPI_Type_commit(&recv_subarray);
 
    //
    // ADD YOUR CODE HERE
@@ -468,13 +468,15 @@ void recvStridedBuffer(float *dstBuf,
    {
       printf(" Rank %d in recvStridedBuffer. receiving full buffer \n", toRank);
       //MPI_Recv(dstBuf, expectedHeight*expectedWidth, MPI_FLOAT, fromRank, toRank, MPI_COMM_WORLD, &stat);
-      MPI_Recv(dstBuf, 1, recv_subarray, fromRank, toRank, MPI_COMM_WORLD, &stat);
+      //MPI_Recv(dstBuf, 1, recv_subarray, fromRank, toRank, MPI_COMM_WORLD, &stat);
+      MPI_Recv(dstBuf, data_size, MPI_FLOAT, fromRank, toRank, MPI_COMM_WORLD, &stat);
    }
    else
    {
       printf(" Rank %d in recvStridedBuffer. receiving tile data \n", toRank);
       //MPI_Recv(dst_data, expectedHeight*expectedWidth, MPI_FLOAT, fromRank, toRank, MPI_COMM_WORLD, &stat);
-      MPI_Recv(dst_data, 1, recv_subarray, fromRank, toRank, MPI_COMM_WORLD, &stat);
+      //MPI_Recv(dst_data, 1, recv_subarray, fromRank, toRank, MPI_COMM_WORLD, &stat);
+      MPI_Recv(&dst_data[0], data_size, MPI_FLOAT, fromRank, toRank, MPI_COMM_WORLD, &stat);
 
       // put the data into the destination appropriately
       printf(" Rank %d in recvStridedBuffer. copying to destination from tile data \n", toRank);
@@ -487,7 +489,7 @@ void recvStridedBuffer(float *dstBuf,
       }
    }
 
-   MPI_Type_free(&recv_subarray);
+   //MPI_Type_free(&recv_subarray);
 }
 
 
