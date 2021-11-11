@@ -681,7 +681,7 @@ int main(int ac, char *av[]) {
 #endif
 
    printf(" in main. about to call computeMeshDecomposition \n");
-   //computeMeshDecomposition(&as, &tileArray);
+   computeMeshDecomposition(&as, &tileArray);
    
    if (as.myrank == 0 && as.debug==1) // print out the AppState and tileArray
    {
