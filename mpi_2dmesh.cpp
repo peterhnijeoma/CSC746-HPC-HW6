@@ -549,10 +549,10 @@ void scatterAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float
             printf("scatterAllTiles() receive side:: t->tileRank=%d, myrank=%d, t->inputBuffer->size()=%d, t->outputBuffersize()=%d \n", t->tileRank, myrank, t->inputBuffer.size(), t->outputBuffer.size());
 #endif
 
-            recvStridedBuffer(t->inputBuffer.data(), t->width, t->height,
-                  0, 0,  // offset into the tile buffer: we want the whole thing
-                  t->width, t->height, // how much data coming from this tile
-                  fromRank, myrank); 
+            // recvStridedBuffer(t->inputBuffer.data(), t->width, t->height,
+            //       0, 0,  // offset into the tile buffer: we want the whole thing
+            //       t->width, t->height, // how much data coming from this tile
+            //       fromRank, myrank); 
          }
          else if (myrank == 0)
          {
