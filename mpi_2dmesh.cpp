@@ -731,7 +731,7 @@ int main(int ac, char *av[]) {
 
       printf(" in main. about to sobelAllTiles \n");
 
-      //sobelAllTiles(as.myrank, tileArray);
+      sobelAllTiles(as.myrank, tileArray);
 
       // end the timer
       MPI_Barrier(MPI_COMM_WORLD);
@@ -772,7 +772,7 @@ int main(int ac, char *av[]) {
 
    MPI_Barrier(MPI_COMM_WORLD);
 
-   printf(" in main. about will print runtimes - done \n");
+   printf(" in main. will print runtimes - done \n");
 
    if (as.myrank == 0) {
       printf("\n\nTiming results from rank 0: \n");
