@@ -766,7 +766,7 @@ int main(int ac, char *av[]) {
 
       printf(" in main. about to sobelAllTiles \n");
 
-      //sobelAllTiles(as.myrank, tileArray);
+      sobelAllTiles(as.myrank, tileArray);
 
       // end the timer
       MPI_Barrier(MPI_COMM_WORLD);
