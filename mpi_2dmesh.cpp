@@ -392,7 +392,7 @@ void sendStridedBuffer(float *srcBuf,
 
    MPI_Datatype send_subarray;
    int tile_data_size[] = {data_size};
-   int sub_array_size[] = {100};
+   int sub_array_size[] = {1000};
    int subarray_start_ind[] = {1};
    int numb_dims = 1;
 
@@ -407,8 +407,6 @@ void sendStridedBuffer(float *srcBuf,
       printf(" Rank  %d in sendStridedBuffer. will send full srcbuf \n", fromRank);
       MPI_Send(srcBuf, 1, send_subarray, toRank, fromRank, MPI_COMM_WORLD);
       //MPI_Send(srcBuf, sendWidth*sendHeight, MPI_FLOAT, toRank, fromRank, MPI_COMM_WORLD);
-
-      MPI_Type_free(&send_subarray);
    }
    else
    {      
@@ -428,6 +426,8 @@ void sendStridedBuffer(float *srcBuf,
       MPI_Send(tile_data, 1, send_subarray, toRank, fromRank, MPI_COMM_WORLD);
       //MPI_Send(tile_data, sendWidth*sendHeight, MPI_FLOAT, toRank, fromRank, MPI_COMM_WORLD);
    }
+
+   MPI_Type_free(&send_subarray);
 }
 
 void recvStridedBuffer(float *dstBuf, 
@@ -446,7 +446,7 @@ void recvStridedBuffer(float *dstBuf,
 
    MPI_Datatype recv_subarray;
    int tile_data_size[] = {data_size};
-   int sub_array_size[] = {100};
+   int sub_array_size[] = {1000};
    int subarray_start_ind[] = {1};
    int numb_dims = 1;
 
@@ -486,6 +486,8 @@ void recvStridedBuffer(float *dstBuf,
          }
       }
    }
+
+   MPI_Type_free(&recv_subarray);
 }
 
 
