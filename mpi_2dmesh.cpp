@@ -126,11 +126,11 @@ void computeMeshDecomposition(AppState *as, vector < vector < Tile2D > > *tileAr
    int xtiles, ytiles;
    int ntiles;
 
-   printf(" in computeMeshDecomposition. \n");
+   //printf(" in computeMeshDecomposition. \n");
 
    if (as->decomp == ROW_DECOMP) {
 
-      printf(" in computeMeshDecomposition. row decomposition\n");
+      //printf(" in computeMeshDecomposition. row decomposition\n");
       // in a row decomposition, each tile width is the same as the mesh width
       // the mesh is decomposed along height
       xtiles = 1;
@@ -147,7 +147,7 @@ void computeMeshDecomposition(AppState *as, vector < vector < Tile2D > > *tileAr
       ylocs[ytiles] = as->global_mesh_size[1];
 
       // then, create tiles along the y axis
-      printf(" in computeMeshDecomposition. row decomp - creating tiles\n");
+      //printf(" in computeMeshDecomposition. row decomp - creating tiles\n");
       for (int i = 0; i < ytiles; i++)
       {
          vector < Tile2D > tiles;
@@ -399,18 +399,18 @@ void sendStridedBuffer(float *srcBuf,
    MPI_Type_create_subarray(numb_dims, tile_data_size, sub_array_size, subarray_start_ind, MPI_ORDER_C, MPI_FLOAT, &send_subarray);
    MPI_Type_commit(&send_subarray);
 
-   printf(" in sendStridedBuffer. from rank %d to rank %d srcwidth %d srcheight %d rowoffset %d coloffset %d sendwidth %d send height %d \n", fromRank, toRank, srcWidth, srcHeight, srcOffsetRow, srcOffsetColumn, sendWidth, sendHeight);
+   //printf(" in sendStridedBuffer. from rank %d to rank %d srcwidth %d srcheight %d rowoffset %d coloffset %d sendwidth %d send height %d \n", fromRank, toRank, srcWidth, srcHeight, srcOffsetRow, srcOffsetColumn, sendWidth, sendHeight);
 
    if ((srcWidth == sendWidth) && (srcHeight == sendHeight) &&
        (srcOffsetRow == 0) && (srcOffsetColumn == 0))  // send the full bufer
    {
-      printf(" Rank  %d in sendStridedBuffer. will send full srcbuf \n", fromRank);
+      //printf(" Rank  %d in sendStridedBuffer. will send full srcbuf \n", fromRank);
       MPI_Send(srcBuf, 1, send_subarray, toRank, msgTag, MPI_COMM_WORLD);
       //MPI_Send(srcBuf, sendWidth*sendHeight, MPI_FLOAT, toRank, msgTag, MPI_COMM_WORLD);
    }
    else
    {      
-      printf(" Rank %d in sendStridedBuffer. accumulating tile data \n", fromRank);
+      //printf(" Rank %d in sendStridedBuffer. accumulating tile data \n", fromRank);
       //accumulate the data before sending
       //k = 0;
       for (int i = 0; i < sendHeight; i++, start_index += srcWidth)
@@ -421,7 +421,7 @@ void sendStridedBuffer(float *srcBuf,
          }
       }
 
-      printf(" Rank %d in sendStridedBuffer. sending tile data \n", fromRank);
+      //printf(" Rank %d in sendStridedBuffer. sending tile data \n", fromRank);
       // send the tile data
       MPI_Send(tile_data, 1, send_subarray, toRank, msgTag, MPI_COMM_WORLD);
       //MPI_Send(tile_data, sendWidth*sendHeight, MPI_FLOAT, toRank, msgTag, MPI_COMM_WORLD);
@@ -461,25 +461,25 @@ void recvStridedBuffer(float *dstBuf,
    // at dstOffsetColumn, dstOffsetRow, and that is expectedWidth, expectedHeight in size.
    //
 
-   printf(" in recvStridedBuffer. from rank %d to rank %d dstwidth %d dstheight %d rowoffset %d coloffset %d expectedwidth %d expectedheight %d \n", fromRank, toRank, dstWidth, dstHeight, dstOffsetRow, dstOffsetColumn, expectedWidth, expectedHeight);
+   //printf(" in recvStridedBuffer. from rank %d to rank %d dstwidth %d dstheight %d rowoffset %d coloffset %d expectedwidth %d expectedheight %d \n", fromRank, toRank, dstWidth, dstHeight, dstOffsetRow, dstOffsetColumn, expectedWidth, expectedHeight);
 
    if ((dstWidth == expectedWidth) && (dstHeight == expectedHeight) &&
        (dstOffsetColumn == 0) && (dstOffsetRow == 0))  // receive the entire buffer
    {
-      printf(" Rank %d in recvStridedBuffer. receiving full buffer \n", toRank);
+      //printf(" Rank %d in recvStridedBuffer. receiving full buffer \n", toRank);
       //MPI_Recv(dstBuf, expectedHeight*expectedWidth, MPI_FLOAT, fromRank, msgTag, MPI_COMM_WORLD, &stat);
       MPI_Recv(dstBuf, 1, recv_subarray, fromRank, msgTag, MPI_COMM_WORLD, &stat);
       //MPI_Recv(dstBuf, data_size, MPI_FLOAT, fromRank, msgTag, MPI_COMM_WORLD, &stat);
    }
    else
    {
-      printf(" Rank %d in recvStridedBuffer. receiving tile data \n", toRank);
+      //printf(" Rank %d in recvStridedBuffer. receiving tile data \n", toRank);
       //MPI_Recv(dst_data, expectedHeight*expectedWidth, MPI_FLOAT, fromRank, msgTag, MPI_COMM_WORLD, &stat);
       MPI_Recv(dst_data, 1, recv_subarray, fromRank, msgTag, MPI_COMM_WORLD, &stat);
       //MPI_Recv(&dst_data[0], data_size, MPI_FLOAT, fromRank, msgTag, MPI_COMM_WORLD, &stat);
 
       // put the data into the destination appropriately
-      printf(" Rank %d in recvStridedBuffer. copying to destination from tile data \n", toRank);
+      //printf(" Rank %d in recvStridedBuffer. copying to destination from tile data \n", toRank);
       for (int row = 0; row < expectedHeight; row++, start_index += dstWidth)
       {
          for (int j = 0, k = 0; j < expectedWidth; j++, k++)
@@ -557,7 +557,7 @@ void sobelAllTiles(int myrank, vector < vector < Tile2D > > & tileArray) {
 #endif
             // ADD YOUR CODE HERE
             // to call your sobel filtering code on each tile
-            printf(" in sobelAllTiles. - calling do_sobel_filtering \n");
+            //printf(" in sobelAllTiles. - calling do_sobel_filtering \n");
             do_sobel_filtering(t->inputBuffer.data(), t->outputBuffer.data(), t->height, t->width);
          }
       }
@@ -566,7 +566,7 @@ void sobelAllTiles(int myrank, vector < vector < Tile2D > > & tileArray) {
 
 void scatterAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float *s, int global_width, int global_height)
 {
-   printf(" in scatterAllTiles.\n");
+   //printf(" in scatterAllTiles.\n");
 
 #if DEBUG_TRACE
    printf(" Rank %d is entering scatterAllTiles \n", myrank);
@@ -587,7 +587,7 @@ void scatterAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float
 #if DEBUG_TRACE
             printf("scatterAllTiles() receive side:: t->tileRank=%d, myrank=%d, t->inputBuffer->size()=%d, t->outputBuffersize()=%d \n", t->tileRank, myrank, t->inputBuffer.size(), t->outputBuffer.size());
 #endif
-            printf(" Rank %d in scatterAllTiles. about to do receive tile data \n", t->tileRank);
+            //printf(" Rank %d in scatterAllTiles. about to do receive tile data \n", t->tileRank);
             recvStridedBuffer(t->inputBuffer.data(), t->width, t->height,
                   0, 0,  // offset into the tile buffer: we want the whole thing
                   t->width, t->height, // how much data coming from this tile
@@ -599,7 +599,7 @@ void scatterAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float
 #if DEBUG_TRACE
                printf("scatterAllTiles() send side: t->tileRank=%d, myrank=%d, t->inputBuffer->size()=%d \n", t->tileRank, myrank, t->inputBuffer.size());
 #endif
-               printf(" Rank %d in scatterAllTiles. about to do send tile data to rank %d \n", myrank, t->tileRank);
+               //printf(" Rank %d in scatterAllTiles. about to do send tile data to rank %d \n", myrank, t->tileRank);
                sendStridedBuffer(s, // ptr to the buffer to send
                      global_width, global_height,  // size of the src buffer
                      t->xloc, t->yloc, // offset into the send buffer
@@ -613,7 +613,7 @@ void scatterAllTiles(int myrank, vector < vector < Tile2D > > & tileArray, float
 
                off_t s_offset=0, d_offset=0;
                float *d = t->inputBuffer.data();
-               printf(" Rank %d in scatterAllTiles. about to do memcpy \n", t->tileRank);
+               //printf(" Rank %d in scatterAllTiles. about to do memcpy \n", t->tileRank);
                //s_offset = t->yloc*global_width+t->xloc;  // Peter ijeoma - starting index
 
                for (int j = 0; j < t->height; j++, s_offset+=global_width, d_offset+=t->width)
@@ -700,7 +700,7 @@ int main(int ac, char *av[]) {
    as.myrank = myrank;
    as.nranks = nranks;
 
-   printf(" in main. about to parse args \n");
+   //printf(" in main. about to parse args \n");
 
    if (parseArgs(ac, av, &as) != 0)
    {
@@ -719,7 +719,7 @@ int main(int ac, char *av[]) {
       printf("\n\n ----- All ranks will computeMeshDecomposition \n");
 #endif
 
-   printf(" in main. about to call computeMeshDecomposition \n");
+   //printf(" in main. about to call computeMeshDecomposition \n");
    computeMeshDecomposition(&as, &tileArray);
    
    if (as.myrank == 0 && as.debug==1) // print out the AppState and tileArray
@@ -753,7 +753,7 @@ int main(int ac, char *av[]) {
       // start the timer
       start_time = std::chrono::high_resolution_clock::now();
 
-      printf(" in main. about to scatterAllTiles \n");
+      //printf(" in main. about to scatterAllTiles \n");
 
       scatterAllTiles(as.myrank, tileArray, as.input_data_floats.data(), as.global_mesh_size[0], as.global_mesh_size[1]);
 
@@ -768,7 +768,7 @@ int main(int ac, char *av[]) {
       // start the timer
       start_time = std::chrono::high_resolution_clock::now();
 
-      printf(" in main. about to sobelAllTiles \n");
+      //printf(" in main. about to sobelAllTiles \n");
 
       sobelAllTiles(as.myrank, tileArray);
 
@@ -792,7 +792,7 @@ int main(int ac, char *av[]) {
       // start the timer
       start_time = std::chrono::high_resolution_clock::now();
 
-      printf(" in main. about to gatherAllTiles \n");
+      //printf(" in main. about to gatherAllTiles \n");
 
       gatherAllTiles(as.myrank, tileArray, as.output_data_floats.data(), as.global_mesh_size[0], as.global_mesh_size[1]);
 
@@ -811,7 +811,7 @@ int main(int ac, char *av[]) {
 
    MPI_Barrier(MPI_COMM_WORLD);
 
-   printf(" in main. will print runtimes - done \n");
+   //printf(" in main. will print runtimes - done \n");
 
    if (as.myrank == 0) {
       printf("\n\nTiming results from rank 0: \n");
