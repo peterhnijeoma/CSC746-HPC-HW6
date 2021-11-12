@@ -392,7 +392,7 @@ void sendStridedBuffer(float *srcBuf,
 
    MPI_Datatype send_subarray;
    int tile_data_size[] = {data_size};
-   int sub_array_size[] = {1000};
+   int sub_array_size[] = {data_size/10};
    int subarray_start_ind[] = {1};
    int numb_dims = 1;
 
@@ -446,7 +446,7 @@ void recvStridedBuffer(float *dstBuf,
 
    MPI_Datatype recv_subarray;
    int tile_data_size[] = {data_size};
-   int sub_array_size[] = {1000};
+   int sub_array_size[] = {data_size/10};
    int subarray_start_ind[] = {1};
    int numb_dims = 1;
 
