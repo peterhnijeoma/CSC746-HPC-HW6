@@ -367,7 +367,7 @@ void writeOutputFile(AppState &as)
    fclose(f);
 }
 
-
+int msg_count = 0;
 void sendStridedBuffer(float *srcBuf, 
       int srcWidth, int srcHeight, 
       int srcOffsetColumn, int srcOffsetRow, 
@@ -406,6 +406,7 @@ void sendStridedBuffer(float *srcBuf,
    {
       //printf(" Rank  %d in sendStridedBuffer. will send full srcbuf \n", fromRank);
       MPI_Send(srcBuf, 1, send_subarray, toRank, msgTag, MPI_COMM_WORLD);
+      msg_count++;
       //MPI_Send(srcBuf, sendWidth*sendHeight, MPI_FLOAT, toRank, msgTag, MPI_COMM_WORLD);
    }
    else
@@ -424,12 +425,14 @@ void sendStridedBuffer(float *srcBuf,
       //printf(" Rank %d in sendStridedBuffer. sending tile data \n", fromRank);
       // send the tile data
       MPI_Send(tile_data, 1, send_subarray, toRank, msgTag, MPI_COMM_WORLD);
+      msg_count++;
       //MPI_Send(tile_data, sendWidth*sendHeight, MPI_FLOAT, toRank, msgTag, MPI_COMM_WORLD);
    }
 
    MPI_Type_free(&send_subarray);
 }
 
+int msg_data_total = 0;
 void recvStridedBuffer(float *dstBuf, 
       int dstWidth, int dstHeight, 
       int dstOffsetColumn, int dstOffsetRow, 
@@ -439,6 +442,7 @@ void recvStridedBuffer(float *dstBuf,
    int msgTag = 0;
    int recvSize[2];
    MPI_Status stat;
+   int rcount;
 
    int data_size = expectedWidth*expectedHeight;
    int start_index = dstOffsetRow*dstWidth+dstOffsetColumn;
@@ -468,15 +472,19 @@ void recvStridedBuffer(float *dstBuf,
    {
       //printf(" Rank %d in recvStridedBuffer. receiving full buffer \n", toRank);
       //MPI_Recv(dstBuf, expectedHeight*expectedWidth, MPI_FLOAT, fromRank, msgTag, MPI_COMM_WORLD, &stat);
-      MPI_Recv(dstBuf, 1, recv_subarray, fromRank, msgTag, MPI_COMM_WORLD, &stat);
-      //MPI_Recv(dstBuf, data_size, MPI_FLOAT, fromRank, msgTag, MPI_COMM_WORLD, &stat);
+      //MPI_Recv(dstBuf, 1, recv_subarray, fromRank, msgTag, MPI_COMM_WORLD, &stat);
+      MPI_Recv(dstBuf, data_size, MPI_FLOAT, fromRank, msgTag, MPI_COMM_WORLD, &stat);
+      MPI_Get_count(&stat, MPI_FLOAT, &rcount);
+      msg_data_total += rcount;
    }
    else
    {
       //printf(" Rank %d in recvStridedBuffer. receiving tile data \n", toRank);
       //MPI_Recv(dst_data, expectedHeight*expectedWidth, MPI_FLOAT, fromRank, msgTag, MPI_COMM_WORLD, &stat);
-      MPI_Recv(dst_data, 1, recv_subarray, fromRank, msgTag, MPI_COMM_WORLD, &stat);
-      //MPI_Recv(&dst_data[0], data_size, MPI_FLOAT, fromRank, msgTag, MPI_COMM_WORLD, &stat);
+      //MPI_Recv(dst_data, 1, recv_subarray, fromRank, msgTag, MPI_COMM_WORLD, &stat);
+      MPI_Recv(&dst_data[0], data_size, MPI_FLOAT, fromRank, msgTag, MPI_COMM_WORLD, &stat);
+      MPI_Get_count(&stat, MPI_FLOAT, &rcount);
+      msg_data_total += rcount;
 
       // put the data into the destination appropriately
       //printf(" Rank %d in recvStridedBuffer. copying to destination from tile data \n", toRank);
@@ -818,6 +826,9 @@ int main(int ac, char *av[]) {
       printf("\tScatter time:\t%6.4f (ms) \n", elapsed_scatter_time*1000.0);
       printf("\tSobel time:\t%6.4f (ms) \n", elapsed_sobel_time*1000.0);
       printf("\tGather time:\t%6.4f (ms) \n", elapsed_gather_time*1000.0);
+      printf("\n\nNumber of messages and total data moved from rank 0: \n");
+      printf("\tNumber of messages:\t%d \n", msg_count);
+      printf("\tTotal data moved:\t%d \n", msg_data_total);
    }
 
    MPI_Finalize();
